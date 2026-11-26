@@ -2,7 +2,7 @@
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
 Target: `utility_agent1` (regression | RMSE)
-Active Model Operations: lgbm_optuna_tuned, deep_interaction_gbdt, rff_mlp_neural_head
+Active Model Operations: catboost_tuned, xgb_optuna_tuned
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import pandas as pd
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-ACTIVE_MODEL_OPS: tuple[str, ...] = ('lgbm_optuna_tuned', 'deep_interaction_gbdt', 'rff_mlp_neural_head')
+ACTIVE_MODEL_OPS: tuple[str, ...] = ('catboost_tuned', 'xgb_optuna_tuned')
 IS_BINARY_TASK: bool = "regression" == "binary_classification"
 
 
