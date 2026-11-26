@@ -1,7 +1,7 @@
 """Stage 1 · Fold-Safe Data Hygiene & Preprocessing (`pipeline/preprocess.py`).
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
-Active Operations: missing_indicators
+Active Operations: rare_category_grouping, robust_zscore
 """
 
 from __future__ import annotations
@@ -11,9 +11,9 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-ACTIVE_PREPROCESS_OPS: tuple[str, ...] = ('missing_indicators',)
-SCHEMA_CATEGORICAL_SAMPLE: list[str] = []
-SCHEMA_NUMERIC_SAMPLE: list[str] = ['perspective_sign', 'signed_adv_AdvantageP1', 'a1_full', 'a2_full', 'a1_cfg_cat_1', 'a2_cfg_cat_1', 'same_cfg_cat_1', 'a1_cfg_num_2', 'a2_cfg_num_2', 'diff_cfg_num_2', 'sum_cfg_num_2', 'log_ratio_cfg_num_2']
+ACTIVE_PREPROCESS_OPS: tuple[str, ...] = ('rare_category_grouping', 'robust_zscore')
+SCHEMA_CATEGORICAL_SAMPLE: list[str] = ['a1_full', 'a2_full', 'pair_unordered_key', 'a1_cfg_cat_1', 'a2_cfg_cat_1', 'a1_cfg_cat_3', 'a2_cfg_cat_3', 'a1_cfg_cat_4', 'a2_cfg_cat_4']
+SCHEMA_NUMERIC_SAMPLE: list[str] = ['perspective_sign', 'signed_adv_AdvantageP1', 'same_cfg_cat_1', 'a1_cfg_num_2', 'a2_cfg_num_2', 'diff_cfg_num_2', 'sum_cfg_num_2', 'log_ratio_cfg_num_2', 'same_cfg_cat_3', 'same_cfg_cat_4', 'txt0_char_len', 'txt0_word_cnt']
 
 
 def fit_preprocess_stage(
