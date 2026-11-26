@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 ACTIVE_FEATURE_OPS: tuple[str, ...] = ('log1p_skewed',)
-PRIORITY_SIGNAL_COLUMNS: list[str] = ['a2_full', 'a1_full', 'signed_adv_AdvantageP1', 'AdvantageP1', 'a2_cfg_cat_1', 'a1_cfg_cat_1']
+PRIORITY_SIGNAL_COLUMNS: list[str] = ['signed_adv_AdvantageP1', 'a1_full', 'AdvantageP1', 'a2_full', 'a2_cfg_cat_1', 'PlayoutsPerSecond']
 
 
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
@@ -28,9 +28,9 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
                 break
 
     # Signed log1p compression for skewed continuous predictors
-    if 'a2_full' in out.columns: out['a2_full_log1p'] = np.sign(out['a2_full']) * np.log1p(np.abs(out['a2_full']))
-    if 'a1_full' in out.columns: out['a1_full_log1p'] = np.sign(out['a1_full']) * np.log1p(np.abs(out['a1_full']))
     if 'signed_adv_AdvantageP1' in out.columns: out['signed_adv_AdvantageP1_log1p'] = np.sign(out['signed_adv_AdvantageP1']) * np.log1p(np.abs(out['signed_adv_AdvantageP1']))
+    if 'a1_full' in out.columns: out['a1_full_log1p'] = np.sign(out['a1_full']) * np.log1p(np.abs(out['a1_full']))
+    if 'AdvantageP1' in out.columns: out['AdvantageP1_log1p'] = np.sign(out['AdvantageP1']) * np.log1p(np.abs(out['AdvantageP1']))
     for _c in fallback_cols[:3]:
         if f'{_c}_log1p' not in out.columns:
             out[f'{_c}_log1p'] = np.sign(out[_c]) * np.log1p(np.abs(out[_c]))
