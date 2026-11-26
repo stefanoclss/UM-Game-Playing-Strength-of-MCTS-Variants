@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.58355-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.54237-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -37,8 +37,8 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
 | **Baseline 5-Fold OOF Score** | `4998526.41474` |
-| **Champion 5-Fold OOF Score** | **`0.58355`** (`+4998525.83118` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±0.01190` across `5` strict folds |
+| **Champion 5-Fold OOF Score** | **`0.54237`** (`+4998525.87237` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±0.01136` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,7 +49,7 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **L2 Ridge Linear** (`ridge`) | `0.58338 ± 0.01190` | `0.2 ms` | `27.61 ms` | `100.0%` | `Best Solo + Fastest SLA` |
+| **Oblivious GBDT** (`sym`) | `0.54222 ± 0.01136` | `1440.0 ms` | `18.26 ms` | `100.0%` | `Best Solo + Fastest SLA` |
 
 ---
 
@@ -63,6 +63,7 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 | **Gen 1** | `pipeline/models.py` | `boosted_residual_trees` | `0.59280` | `+4998525.82193` | Coordinate-ascent probe on `model`: Evaluate single estimator `Gradient Boosted Orthogonal Trees` |
 | **Gen 2** | `pipeline/postprocess.py` | `oof_residual_ridge` | `0.58367` | `+0.00914` | Coordinate-ascent probe on `postprocess`: Fold-Safe Linear Residual Skip-Corrector |
 | **Gen 3** | `pipeline/augmentation.py` | `gaussian_feature_jitter` | `0.58355` | `+0.00011` | Applying gaussian_feature_jitter after log1p-skewed transformation on top-residual columns (txt1_svd_1, MovesPerSecond, signed_adv_AdvantageP1) will... |
+| **Gen 4** | `pipeline/models.py` | `boosted_residual_trees`, `hybrid_ridge_boost_blend` | `0.54237` | `+0.04119` | Coordinate-ascent probe on `model`: Test 2-model ensemble adding `Linear + Residual GBDT Blend` |
 
 ---
 
@@ -74,9 +75,9 @@ flowchart LR
     SPLIT --> PRE["1. Preprocessing: mean_impute"]
     PRE --> FEAT["2. Features: raw_passthrough"]
     FEAT --> OBJ["3. Objective: standard_task_loss"]
-    OBJ --> M0["4. Ensemble: L2 Ridge Linear (100%)"]
+    OBJ --> M0["4. Ensemble: Oblivious GBDT (100%)"]
     M0 --> POST["5. Post-Processing: oof_residual_ridge"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.58355)"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.54237)"]
 ```
 
 | Deliverable | Role in Production Workflow |
