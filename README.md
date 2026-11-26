@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%207.48000-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%205.31553-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -37,8 +37,8 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
 | **Baseline 5-Fold OOF Score** | `52.21016` |
-| **Champion 5-Fold OOF Score** | **`7.48000`** (`+44.73016` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±6.47871` across `5` strict folds |
+| **Champion 5-Fold OOF Score** | **`5.31553`** (`+46.89463` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±4.53590` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,7 +49,7 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **L2 Ridge Linear** (`ridge`) | `18.66679 ± 36.22089` | `0.2 ms` | `50.10 ms` | `100.0%` | `Best Solo + Fastest SLA` |
+| **L2 Ridge Linear** (`ridge`) | `18.66679 ± 36.22089` | `0.2 ms` | `51.16 ms` | `100.0%` | `Best Solo + Fastest SLA` |
 
 ---
 
@@ -65,6 +65,7 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 | **Gen 3** | `pipeline/features.py` | `log1p_skewed`, `row_summary_stats`, `top_pair_products` | `49.63045` | `+1.34780` | Applying row-level density statistics and bigram products to the text-derived columns alongside log-scaling will capture non-linear interaction patterns... |
 | **Gen 4** | `pipeline/augmentation.py` | `feature_mask_dropout` | `40.67838` | `+8.95207` | Applying feature_mask_dropout to the text-derived features will simulate token-level noise robustness, preventing overfitting on high-frequency SVD... |
 | **Gen 5** | `pipeline/models.py` (`stream_1`) | `view_obj:standard_task_loss`, `view_feat:plr_periodic_embeddings`, `catboost_tuned` | `7.48000` | `+33.19838` | Spawn orthogonal CatBoost + periodic embedding stream on native scale. |
+| **Gen 6** | `pipeline/models.py` (`stream_1`) | `view_obj:standard_task_loss`, `view_feat:plr_periodic_embeddings`, `catboost_tuned`, `view_feat:pairwise_diff_crosses`, `lgbm_optuna_tuned`, `ridge_l2_linear` | `5.31553` | `+2.16447` | Augmenting the current CatBoost ensemble with an Optuna-tuned LightGBM head and a Ridge linear baseline, while injecting pairwise textual discrepancy... |
 
 ---
 
@@ -78,10 +79,10 @@ flowchart LR
     FEAT --> OBJ["3. Objective: standard_task_loss"]
     OBJ --> M0["4a. Primary Ensemble: L2 Ridge Linear (100%)"]
     M0 --> FUSE["Quantile-CDF Fusion"]
-    OBJ --> S1["4b. stream_1: view_obj:standard_task_loss, view_feat:plr_periodic_embeddings, catboost_tuned"]
+    OBJ --> S1["4b. stream_1: view_obj:standard_task_loss, view_feat:plr_periodic_embeddings, catboost_tuned, +3 more"]
     S1 --> FUSE
     FUSE --> POST["5. Post-Processing: optimal_threshold_tune"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 7.48000)"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 5.31553)"]
 ```
 
 | Deliverable | Role in Production Workflow |
