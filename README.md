@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.43082-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.42887-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -37,8 +37,8 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
 | **Baseline 5-Fold OOF Score** | `4790221.41076` |
-| **Champion 5-Fold OOF Score** | **`0.43082`** (`+4790220.97994` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±0.01151` across `5` strict folds |
+| **Champion 5-Fold OOF Score** | **`0.42887`** (`+4790220.98189` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±0.01269` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,7 +49,7 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Optuna XGBoost** (`xgb`) | `0.43057 ± 0.01151` | `72283.7 ms` | `219.41 ms` | `100.0%` | `Best Solo + Fastest SLA` |
+| **Optuna XGBoost** (`xgb`) | `0.42855 ± 0.01269` | `81812.5 ms` | `200.81 ms` | `100.0%` | `Best Solo + Fastest SLA` |
 
 ---
 
@@ -67,6 +67,8 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 | **Gen 5** | `pipeline/preprocess.py` | `median_impute`, `winsorize_iqr`, `robust_zscore` | `0.45614` | `+0.00272` | Applying robust Z-score scaling after IQR winsorization and median imputation will normalize the heavy tails of MovesPerSecond and PlayoutsPerSecond... |
 | **Gen 6** | `pipeline/models.py` | `xgb_optuna_tuned` | `0.44846` | `+0.00768` | Replacing LightGBM with XGBoost targets the residual skew in MovesPerSecond/PlayoutsPerSecond and the Completion non-linearity via histogram-based... |
 | **Gen 7** | `pipeline/augmentation.py` | `gaussian_feature_jitter`, `paired_antisymmetric_swap_aug` | `0.43082` | `+0.01764` | Coordinate-ascent probe on `augmentation`: Perspective-Flip Antisymmetric Augmentation & Dual Inference |
+| **Gen 8** | `pipeline/augmentation.py` | `gaussian_feature_jitter`, `paired_antisymmetric_swap_aug`, `feature_mask_dropout` | `0.43074` | `+0.00009` | Coordinate-ascent probe on `augmentation`: Stochastic Feature Cutout / Masking |
+| **Gen 9** | `pipeline/preprocess.py` | `missing_indicators` | `0.42887` | `+0.00187` | Adding nullness indicators alongside log-transform feature expansions for heavy-tailed predictors (PlayoutsPerSecond, BoardSitesOccupiedChangeSign) will... |
 
 ---
 
@@ -75,12 +77,12 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 ```mermaid
 flowchart LR
     DATA["Raw Data (121 predictors)"] --> SPLIT["5-Fold CV Split"]
-    SPLIT --> PRE["1. Preprocessing: median_impute, winsorize_iqr, robust_zscore"]
+    SPLIT --> PRE["1. Preprocessing: missing_indicators"]
     PRE --> FEAT["2. Features: raw_passthrough"]
     FEAT --> OBJ["3. Objective: standard_task_loss"]
     OBJ --> M0["4. Ensemble: Optuna XGBoost (100%)"]
     M0 --> POST["5. Post-Processing: oof_residual_ridge"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.43082)"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.42887)"]
 ```
 
 | Deliverable | Role in Production Workflow |
