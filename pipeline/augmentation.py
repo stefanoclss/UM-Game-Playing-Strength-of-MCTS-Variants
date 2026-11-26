@@ -1,7 +1,7 @@
 """Training-Fold-Only Regularization & Augmentation (`pipeline/augmentation.py`).
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
-Active Operations: gaussian_feature_jitter, paired_antisymmetric_swap_aug
+Active Operations: gaussian_feature_jitter, paired_antisymmetric_swap_aug, feature_mask_dropout
 """
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-ACTIVE_AUGMENTATION_OPS: tuple[str, ...] = ('gaussian_feature_jitter', 'paired_antisymmetric_swap_aug')
+ACTIVE_AUGMENTATION_OPS: tuple[str, ...] = ('gaussian_feature_jitter', 'paired_antisymmetric_swap_aug', 'feature_mask_dropout')
 
 
 def run_augmentation_stage(
