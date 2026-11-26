@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.46109-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.44658-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -37,8 +37,8 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
 | **Baseline 5-Fold OOF Score** | `4998526.41474` |
-| **Champion 5-Fold OOF Score** | **`0.46109`** (`+4998525.95365` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±0.02059` across `5` strict folds |
+| **Champion 5-Fold OOF Score** | **`0.44658`** (`+4998525.96815` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±0.01635` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,9 +49,8 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Optuna LightGBM** (`lgbm`) | `0.46066 ± 0.02059` | `36009.1 ms` | `172.62 ms` | `100.0%` | `Best Solo Accuracy` |
-| **Deep Interaction GBDT** (`deep`) | `0.53958 ± 0.01026` | `2799.9 ms` | `30.58 ms` | `0.0%` | `Standby Candidate` |
-| **RFF Residual MLP** (`mlp`) | `0.55336 ± 0.01470` | `2799.9 ms` | `30.48 ms` | `0.0%` | `Fastest Low-Latency` |
+| **Optuna XGBoost** (`xgb`) | `0.44926 ± 0.01759` | `55069.4 ms` | `74.02 ms` | `50.5%` | `Best Solo + Fastest SLA` |
+| **CatBoost Symmetric** (`catboost`) | `0.44947 ± 0.01670` | `178720.1 ms` | `119.97 ms` | `49.5%` | `Active Ensemble Member` |
 
 ---
 
@@ -67,6 +66,7 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 | **Gen 3** | `pipeline/augmentation.py` | `gaussian_feature_jitter` | `0.58355` | `+0.00011` | Applying gaussian_feature_jitter after log1p-skewed transformation on top-residual columns (txt1_svd_1, MovesPerSecond, signed_adv_AdvantageP1) will... |
 | **Gen 4** | `pipeline/models.py` | `boosted_residual_trees`, `hybrid_ridge_boost_blend` | `0.54237` | `+0.04119` | Coordinate-ascent probe on `model`: Test 2-model ensemble adding `Linear + Residual GBDT Blend` |
 | **Gen 5** | `pipeline/models.py` | `lgbm_optuna_tuned`, `deep_interaction_gbdt`, `rff_mlp_neural_head` | `0.46109` | `+0.08128` | Replacing the linear-biased residual blend with an Optuna-tuned LightGBM for robust skewed numeric handling, combined with Deep Interaction GBDT for... |
+| **Gen 6** | `pipeline/models.py` | `catboost_tuned`, `xgb_optuna_tuned` | `0.44658` | `+0.01451` | CatBoost's Ordered Target Encoding resolves the 'a2_full' category 48 residual bias by preventing target leakage, while XGBoost's histogram-based... |
 
 ---
 
@@ -78,9 +78,9 @@ flowchart LR
     SPLIT --> PRE["1. Preprocessing: mean_impute"]
     PRE --> FEAT["2. Features: raw_passthrough"]
     FEAT --> OBJ["3. Objective: standard_task_loss"]
-    OBJ --> M0["4. Ensemble: Optuna LightGBM (100%)"]
+    OBJ --> M0["4. Ensemble: Optuna XGBoost (51%) + CatBoost Symmetric (49%)"]
     M0 --> POST["5. Post-Processing: oof_residual_ridge"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.46109)"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.44658)"]
 ```
 
 | Deliverable | Role in Production Workflow |
