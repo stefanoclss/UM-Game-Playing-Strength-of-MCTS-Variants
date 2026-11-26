@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.45887-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.45614-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -37,8 +37,8 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
 | **Baseline 5-Fold OOF Score** | `4790221.41076` |
-| **Champion 5-Fold OOF Score** | **`0.45887`** (`+4790220.95190` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±0.02383` across `5` strict folds |
+| **Champion 5-Fold OOF Score** | **`0.45614`** (`+4790220.95462` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±0.02285` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,7 +49,7 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Optuna LightGBM** (`lgbm`) | `0.45805 ± 0.02383` | `49824.0 ms` | `378.25 ms` | `100.0%` | `Best Solo + Fastest SLA` |
+| **Optuna LightGBM** (`lgbm`) | `0.45542 ± 0.02285` | `22088.5 ms` | `467.12 ms` | `100.0%` | `Best Solo + Fastest SLA` |
 
 ---
 
@@ -64,6 +64,7 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 | **Gen 2** | `pipeline/preprocess.py` | `median_impute`, `winsorize_iqr` | `0.46292` | `+0.00058` | Replacing mean imputation with median imputation and IQR winsorization will reduce the influence of extreme outliers in skewed numeric features (e.g.... |
 | **Gen 3** | `pipeline/postprocess.py` | `oof_residual_ridge` | `0.46281` | `+0.00011` | Applying log-transformation to skewed speed metrics and squaring the completion metric prior to OOF residual ridge correction will reduce... |
 | **Gen 4** | `pipeline/augmentation.py` | `gaussian_feature_jitter` | `0.45887` | `+0.00395` | Applying low-variance Gaussian jitter on the identity-augmented base will regularize the model against noise while preserving the signal from... |
+| **Gen 5** | `pipeline/preprocess.py` | `median_impute`, `winsorize_iqr`, `robust_zscore` | `0.45614` | `+0.00272` | Applying robust Z-score scaling after IQR winsorization and median imputation will normalize the heavy tails of MovesPerSecond and PlayoutsPerSecond... |
 
 ---
 
@@ -72,12 +73,12 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 ```mermaid
 flowchart LR
     DATA["Raw Data (121 predictors)"] --> SPLIT["5-Fold CV Split"]
-    SPLIT --> PRE["1. Preprocessing: median_impute, winsorize_iqr"]
+    SPLIT --> PRE["1. Preprocessing: median_impute, winsorize_iqr, robust_zscore"]
     PRE --> FEAT["2. Features: raw_passthrough"]
     FEAT --> OBJ["3. Objective: standard_task_loss"]
     OBJ --> M0["4. Ensemble: Optuna LightGBM (100%)"]
     M0 --> POST["5. Post-Processing: oof_residual_ridge"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.45887)"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.45614)"]
 ```
 
 | Deliverable | Role in Production Workflow |
