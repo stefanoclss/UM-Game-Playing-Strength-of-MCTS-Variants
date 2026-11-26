@@ -1,14 +1,14 @@
 """Stage 5 · Prediction Calibration & Post-Processing (`pipeline/postprocess.py`).
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
-Active Operations: oof_residual_ridge
+Active Operations: optimal_threshold_tune
 """
 
 from __future__ import annotations
 
 import numpy as np
 
-ACTIVE_POSTPROCESS_OPS: tuple[str, ...] = ('oof_residual_ridge',)
+ACTIVE_POSTPROCESS_OPS: tuple[str, ...] = ('optimal_threshold_tune',)
 
 
 def _pav_monotonic_curve(preds: np.ndarray, y_ref: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
