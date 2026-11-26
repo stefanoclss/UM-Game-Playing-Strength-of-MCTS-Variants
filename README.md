@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.45745-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.44664-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -37,8 +37,8 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
 | **Baseline 5-Fold OOF Score** | `4998526.41474` |
-| **Champion 5-Fold OOF Score** | **`0.45745`** (`+4998525.95729` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±0.01887` across `5` strict folds |
+| **Champion 5-Fold OOF Score** | **`0.44664`** (`+4998525.96810` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±0.01583` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,7 +49,7 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Optuna LightGBM** (`lgbm`) | `0.45709 ± 0.01887` | `8536.6 ms` | `229.80 ms` | `100.0%` | `Best Solo + Fastest SLA` |
+| **Optuna LightGBM** (`lgbm`) | `0.44642 ± 0.01583` | `48021.3 ms` | `558.40 ms` | `100.0%` | `Best Solo + Fastest SLA` |
 
 ---
 
@@ -63,6 +63,7 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 | **Gen 1** | `pipeline/models.py` | `lgbm_optuna_tuned` | `0.46084` | `+4998525.95390` | Coordinate-ascent probe on `model`: Evaluate single estimator `Optuna-Tuned LightGBM (Bayesian TPE Hyperparameter Search)` |
 | **Gen 2** | `pipeline/postprocess.py` | `oof_residual_ridge` | `0.46082` | `+0.00002` | Applying an OOF residual ridge regressor will correct the systematic bias identified in high-value skewed columns (PlayoutsPerSecond, MovesPerSecond)... |
 | **Gen 3** | `pipeline/features.py` | `log1p_skewed` | `0.45745` | `+0.00338` | [MCP Residual Guided] Upper-quartile `PlayoutsPerSecond > 1284.72` amplifies OOF error by 1.18x (r=+0.08); apply `log1p_skewed` in `features` stage. |
+| **Gen 4** | `pipeline/augmentation.py` | `paired_antisymmetric_swap_aug` | `0.44664` | `+0.01081` | Coordinate-ascent probe on `augmentation`: Perspective-Flip Antisymmetric Augmentation & Dual Inference |
 
 ---
 
@@ -76,7 +77,7 @@ flowchart LR
     FEAT --> OBJ["3. Objective: standard_task_loss"]
     OBJ --> M0["4. Ensemble: Optuna LightGBM (100%)"]
     M0 --> POST["5. Post-Processing: oof_residual_ridge"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.45745)"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.44664)"]
 ```
 
 | Deliverable | Role in Production Workflow |
