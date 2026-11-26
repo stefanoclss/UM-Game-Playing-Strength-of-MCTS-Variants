@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%2051.01823-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%2050.97825-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -37,8 +37,8 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
 | **Baseline 5-Fold OOF Score** | `52.21016` |
-| **Champion 5-Fold OOF Score** | **`51.01823`** (`+1.19193` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±45.47429` across `5` strict folds |
+| **Champion 5-Fold OOF Score** | **`50.97825`** (`+1.23191` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±45.43848` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,7 +49,7 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **L2 Ridge Linear** (`ridge`) | `23.32102 ± 45.47429` | `0.2 ms` | `42.89 ms` | `100.0%` | `Best Solo + Fastest SLA` |
+| **L2 Ridge Linear** (`ridge`) | `23.30310 ± 45.43848` | `0.2 ms` | `37.49 ms` | `100.0%` | `Best Solo + Fastest SLA` |
 
 ---
 
@@ -61,6 +61,7 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Gen 0** | `scaffold` | Baseline initialization | `52.21016` | `baseline` | Deterministic 5-fold leak-free baseline anchor |
 | **Gen 1** | `pipeline/preprocess.py` | `rare_category_grouping`, `robust_zscore` | `51.01823` | `+1.19193` | Applying rare_category_grouping to high-leverage categorical keys and robust_zscore to text-derived numeric features will reduce feature noise and... |
+| **Gen 2** | `pipeline/postprocess.py` | `optimal_threshold_tune` | `50.97825` | `+0.03998` | Applying optimal threshold tuning on calibrated probabilities will reduce RMSE by aligning predicted utility with the true decision boundary for the... |
 
 ---
 
@@ -73,8 +74,8 @@ flowchart LR
     PRE --> FEAT["2. Features: log1p_skewed"]
     FEAT --> OBJ["3. Objective: standard_task_loss"]
     OBJ --> M0["4. Ensemble: L2 Ridge Linear (100%)"]
-    M0 --> POST["5. Post-Processing: identity_passthrough"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 51.01823)"]
+    M0 --> POST["5. Post-Processing: optimal_threshold_tune"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 50.97825)"]
 ```
 
 | Deliverable | Role in Production Workflow |
