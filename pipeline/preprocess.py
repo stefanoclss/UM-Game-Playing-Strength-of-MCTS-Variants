@@ -1,7 +1,7 @@
 """Stage 1 · Fold-Safe Data Hygiene & Preprocessing (`pipeline/preprocess.py`).
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
-Active Operations: mean_impute
+Active Operations: median_impute, winsorize_iqr
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-ACTIVE_PREPROCESS_OPS: tuple[str, ...] = ('mean_impute',)
+ACTIVE_PREPROCESS_OPS: tuple[str, ...] = ('median_impute', 'winsorize_iqr')
 SCHEMA_CATEGORICAL_SAMPLE: list[str] = []
 SCHEMA_NUMERIC_SAMPLE: list[str] = ['perspective_sign', 'signed_adv_AdvantageP1', 'a1_full', 'a2_full', 'a1_cfg_cat_1', 'a2_cfg_cat_1', 'same_cfg_cat_1', 'a1_cfg_num_2', 'a2_cfg_num_2', 'diff_cfg_num_2', 'sum_cfg_num_2', 'log_ratio_cfg_num_2']
 
