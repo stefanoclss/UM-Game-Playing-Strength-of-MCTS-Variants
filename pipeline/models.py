@@ -2,7 +2,7 @@
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
 Target: `utility_agent1` (regression | RMSE)
-Active Model Operations: xgb_optuna_tuned
+Active Model Operations: ridge_alpha_15.0
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import pandas as pd
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-ACTIVE_MODEL_OPS: tuple[str, ...] = ('xgb_optuna_tuned',)
+ACTIVE_MODEL_OPS: tuple[str, ...] = ('ridge_alpha_15.0',)
 IS_BINARY_TASK: bool = "regression" == "binary_classification"
 
 
