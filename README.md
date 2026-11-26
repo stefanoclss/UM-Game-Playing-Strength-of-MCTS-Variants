@@ -2,7 +2,7 @@
 
 [![Autonomous Synthesis](https://img.shields.io/badge/Synthesized%20By-sovLoop%20(Stealth)-0A66C2?style=for-the-badge)](#how-this-pipeline-was-built)
 [![Foundation LLM](https://img.shields.io/badge/Model-qwen3.5%3A9b-111827?style=for-the-badge)](#how-this-pipeline-was-built)
-[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.44229-059669?style=for-the-badge)](#verified-validation-benchmark)
+[![Validation](https://img.shields.io/badge/5--Fold%20OOF-RMSE%200.43208-059669?style=for-the-badge)](#verified-validation-benchmark)
 [![Security](https://img.shields.io/badge/Zero--Pickle-CWE--502%20Compliant-374151?style=for-the-badge)](#governance--production-guarantees)
 [![Kaggle Public Notebook](https://img.shields.io/badge/Kaggle%20Notebook-Public%20Kernel-20BEFF?style=for-the-badge)](https://www.kaggle.com/code/stefanoclss/um-game-playing-strength-of-mcts-variants)
 [![Kaggle Challenge](https://img.shields.io/badge/Challenge-Benchmark-0284C7?style=for-the-badge)](https://www.kaggle.com/competitions/um-game-playing-strength-of-mcts-variants)
@@ -36,9 +36,9 @@ Production data science teams need pipelines that are not only accurate, but **r
 | **Challenge / Dataset** | **UM - Game-Playing Strength of MCTS Variants** (`um-game-playing-strength-of-mcts-variants`) |
 | **Target Variable (`y`)** | `utility_agent1` (`regression`) |
 | **Evaluation KPI** | `RMSE` (Lower is better) |
-| **Baseline 5-Fold OOF Score** | `4963493.71004` |
-| **Champion 5-Fold OOF Score** | **`0.44229`** (`+4963493.26775` verified lift vs. baseline) |
-| **Cross-Fold Stability (Std. Dev.)** | `±0.02540` across `5` strict folds |
+| **Baseline 5-Fold OOF Score** | `4998526.41474` |
+| **Champion 5-Fold OOF Score** | **`0.43208`** (`+4998525.98265` verified lift vs. baseline) |
+| **Cross-Fold Stability (Std. Dev.)** | `±0.01795` across `5` strict folds |
 | **Synthesis LLM** | `qwen3.5:9b` (via **sovLoop**) |
 
 ---
@@ -49,10 +49,9 @@ Every individual model inside the unrestricted ensemble is benchmarked independe
 
 | Model Family (`key`) | Standalone Val Score | Mean Fold Fit | Mean Fold Inference | Ensemble Weight | Deployment Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Optuna XGBoost** (`xgb`) | `0.44622 ± 0.01870` | `54200.5 ms` | `164.61 ms` | `62.1%` | `Best Solo + Fastest SLA` |
-| **CatBoost Symmetric** (`catboost`) | `0.45199 ± 0.02122` | `104162.0 ms` | `192.80 ms` | `24.8%` | `Active Ensemble Member` |
-| **Optuna LightGBM** (`lgbm`) | `0.46231 ± 0.02322` | `36011.5 ms` | `394.92 ms` | `0.0%` | `Standby Candidate` |
-| **Yandex TabM-Mini PLE** (`tabm_nn`) | `0.59812 ± 0.05311` | `57802.1 ms` | `2253.81 ms` | `13.1%` | `Active Ensemble Member` |
+| **Optuna XGBoost** (`xgb`) | `0.43143 ± 0.01736` | `60118.9 ms` | `164.48 ms` | `85.6%` | `Best Solo + Fastest SLA` |
+| **CatBoost Symmetric** (`catboost`) | `0.44062 ± 0.01798` | `109642.7 ms` | `227.67 ms` | `14.4%` | `Active Ensemble Member` |
+| **Optuna LightGBM** (`lgbm`) | `0.44864 ± 0.01794` | `49083.6 ms` | `550.93 ms` | `0.0%` | `Standby Candidate` |
 
 ---
 
@@ -62,9 +61,11 @@ Every row below corresponds to a verified out-of-fold promotion recorded as an *
 
 | Iteration | Module Evolved | Active Synthesis Operations | 5-Fold OOF `RMSE` | Lift | Engineering Rationale |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Gen 0** | `scaffold` | Baseline initialization | `4963493.71004` | `baseline` | Deterministic 5-fold leak-free baseline anchor |
-| **Gen 1** | `pipeline/models.py` | `xgb_optuna_tuned`, `lgbm_optuna_tuned`, `catboost_tuned` | `0.44532` | `+4963493.26472` | Replacing the linear ridge head with an ensemble of Optuna-tuned GBDTs (XGBoost, LightGBM, CatBoost) will capture the non-linear saturation effects in... |
-| **Gen 2** | `pipeline/models.py` | `xgb_optuna_tuned`, `lgbm_optuna_tuned`, `catboost_tuned`, `tabm_periodic_mlp` | `0.44229` | `+0.00303` | [Phase-2 Neural/Foundation Extension 2/9] Add `tabm_periodic_mlp` onto Phase-1 champion & reweight OOF blend |
+| **Gen 0** | `scaffold` | Baseline initialization | `4998526.41474` | `baseline` | Deterministic 5-fold leak-free baseline anchor |
+| **Gen 1** | `pipeline/models.py` | `xgb_optuna_tuned` | `0.45144` | `+4998525.96329` | Coordinate-ascent probe on `model`: Evaluate single estimator `Optuna-Tuned XGBoost (Histogram GBDT)` |
+| **Gen 2** | `pipeline/postprocess.py` | `oof_residual_ridge` | `0.45143` | `+0.00001` | Applying OOF-residual ridge regression corrects systematic bias in high-leverage game states (e.g., specific a2_full categories) without leaking... |
+| **Gen 3** | `pipeline/models.py` | `xgb_optuna_tuned`, `catboost_tuned`, `lgbm_optuna_tuned` | `0.44915` | `+0.00228` | CatBoost's Ordered Boosting will capture the signal in 'a2_full:37' without overfitting to noise, while LightGBM provides complementary tree-splitting... |
+| **Gen 4** | `pipeline/augmentation.py` | `paired_antisymmetric_swap_aug` | `0.43208` | `+0.01707` | [Phase-2 Antisymmetry Invariance] Apply ['paired_antisymmetric_swap_aug'] on `augmentation` |
 
 ---
 
@@ -76,9 +77,9 @@ flowchart LR
     SPLIT --> PRE["1. Preprocessing: mean_impute"]
     PRE --> FEAT["2. Features: raw_passthrough"]
     FEAT --> OBJ["3. Objective: standard_task_loss"]
-    OBJ --> M0["4. Ensemble: Optuna XGBoost (62%) + CatBoost Symmetric (25%) + Yandex TabM-Mini PLE (13%)"]
-    M0 --> POST["5. Post-Processing: identity_passthrough"]
-    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.44229)"]
+    OBJ --> M0["4. Ensemble: Optuna XGBoost (86%) + CatBoost Symmetric (14%)"]
+    M0 --> POST["5. Post-Processing: oof_residual_ridge"]
+    POST --> OUT["5-Fold OOF & Holdout (RMSE = 0.43208)"]
 ```
 
 | Deliverable | Role in Production Workflow |
