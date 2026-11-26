@@ -1,7 +1,7 @@
 """Stage 2 · Interpretable Feature Engineering (`pipeline/features.py`).
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
-Active Operations: log1p_skewed
+Active Operations: log1p_skewed, row_summary_stats, top_pair_products
 """
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-ACTIVE_FEATURE_OPS: tuple[str, ...] = ('log1p_skewed',)
+ACTIVE_FEATURE_OPS: tuple[str, ...] = ('log1p_skewed', 'row_summary_stats', 'top_pair_products')
 PRIORITY_SIGNAL_COLUMNS: list[str] = ['log_ratio_cfg_num_2', 'MoveDistanceAverage', 'MoveDistanceMedian', 'txt0_svd_2', 'DecisionFactorAverage', 'diff_cfg_num_2']
 
 
@@ -34,6 +34,14 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     for _c in fallback_cols[:3]:
         if f'{_c}_log1p' not in out.columns:
             out[f'{_c}_log1p'] = np.sign(out[_c]) * np.log1p(np.abs(out[_c]))
+    # Multiplicative interaction cross terms
+    if len(fallback_cols) >= 2:
+        _a, _b = fallback_cols[0], fallback_cols[1]
+        out[f'{_a}_mul_{_b}'] = (out[_a] * out[_b]).clip(-25.0, 25.0)
+    # Row-wise summary moments across predictors
+    if fallback_cols:
+        out['row_numeric_mean'] = out[fallback_cols].mean(axis=1)
+        out['row_numeric_std'] = out[fallback_cols].std(axis=1).fillna(0.0)
 
     return out.replace([np.inf, -np.inf], 0.0).fillna(0.0)
 
