@@ -1,7 +1,7 @@
 """Training-Fold-Only Regularization & Augmentation (`pipeline/augmentation.py`).
 
 Synthesized by sovLoop (Model: qwen3.5:9b)
-Active Operations: identity_augmentation
+Active Operations: gaussian_feature_jitter
 """
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-ACTIVE_AUGMENTATION_OPS: tuple[str, ...] = ('identity_augmentation',)
+ACTIVE_AUGMENTATION_OPS: tuple[str, ...] = ('gaussian_feature_jitter',)
 
 
 def run_augmentation_stage(
