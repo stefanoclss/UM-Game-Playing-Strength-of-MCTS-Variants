@@ -1,0 +1,18 @@
+# Exclude serialized model binaries, local artifacts & raw data (no Git LFS required)
+*.pkl
+*.pickle
+*.joblib
+*.npz
+*.npy
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.parquet
+data/
+artifacts/
+oof_predictions.csv
+submission.csv
+__pycache__/
+.ipynb_checkpoints/
+.sovloop_synced_gens.json
